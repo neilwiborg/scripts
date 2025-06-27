@@ -22,7 +22,7 @@ repo() {
 # Tab completion for repo function
 _repo_complete() {
 	local repos=($(find "$sources_dir" -maxdepth 1 \( -type d -o -type l \) -exec basename {} \; | sed '1d'))
-	_describe 'repositories' repos
+	_describe 'repositories' repos || compadd "${repos[@]}"
 }
 
 compdef _repo_complete repo
