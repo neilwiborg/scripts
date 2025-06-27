@@ -1,5 +1,6 @@
 #!/usr/bin/env zsh
 
+# define global array so completions will have access to the variable
 typeset -ga sources_dirs=("$HOME/cs")
 
 repo() {
@@ -15,7 +16,7 @@ repo() {
 
 	# loop over all sources directories
 	for dir in "${sources_dirs[@]}"; do
-		# search for directories and symlinks only one level deep in $sources_dir, and search case-insensitively
+		# search for directories and symlinks only one level deep in $dir, and search case-insensitively
 		target=$(find "$dir" -maxdepth 1 \( -type d -o -type l \) -iname "*$search_term*" | head -n 1)
 		# if we find the target, then break
 		[[ -n "$target" ]] && break
@@ -35,7 +36,7 @@ _repo_complete() {
 	local -a repos
 	# loop over all sources directories
 	for dir in "${sources_dirs[@]}"; do
-		# get just the basenames of all directories and symlinks and remove the first line ($sources_dir)
+		# get just the basenames of all directories and symlinks and remove the first line ($dir)
 		repos+=($(find "$dir" -maxdepth 1 \( -type d -o -type l \) -exec basename {} \; | sed '1d'))
 	done
 
