@@ -31,7 +31,7 @@ repo() {
 	fi
 }
 
-# Tab completion for repo function
+# tab completion for repo function
 _repo_complete() {
 	local -a repos
 	# loop over all sources directories
