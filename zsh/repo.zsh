@@ -33,6 +33,9 @@ repo() {
 
 # tab completion for repo function
 _repo_complete() {
+	# check that completions are for the first argument
+	(( CURRENT == 2 )) || return 1
+
 	local -a repos
 	# loop over all sources directories
 	for dir in "${sources_dirs[@]}"; do
