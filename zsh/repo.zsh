@@ -4,26 +4,26 @@
 typeset -ga sources_dirs=("$HOME/cs")
 
 repo_find_match() {
-  local search_term="$1"
-  local pathname base
+	local search_term="$1"
+	local pathname base
 
-  # loop over all sources directories
-  for dir in "${sources_dirs[@]}"; do
-    while IFS= read -r pathname; do
-	  # check if path is a directory or symlink to a directory
-      [[ -d "$pathname" ]] || continue
-	  # extract basename and convert to lowercase
-      base="${pathname:t:l}"
-      if [[ "$base" == "$search_term" ]]; then
-	    # return match
-		REPLY="$pathname"
-        return 0
-      fi
-	# search for directories and symlinks only one level deep in $dir, and search case-insensitively
-    done < <(fd "$search_term" "$dir" --max-depth 1 --type d --type l --ignore-case)
-  done
+	# loop over all sources directories
+	for dir in "${sources_dirs[@]}"; do
+		while IFS= read -r pathname; do
+			# check if path is a directory or symlink to a directory
+			[[ -d "$pathname" ]] || continue
+			# extract basename and convert to lowercase
+			base="${pathname:t:l}"
+			if [[ "$base" == "$search_term" ]]; then
+				# return match
+				REPLY="$pathname"
+				return 0
+			fi
+			# search for directories and symlinks only one level deep in $dir, and search case-insensitively
+		done < <(fd "$search_term" "$dir" --max-depth 1 --type d --type l --ignore-case)
+	done
 
-  return 1
+	return 1
 }
 
 repo() {
@@ -53,10 +53,18 @@ _repo_complete() {
 	(( CURRENT == 2 )) || return 1
 
 	local -a repos
+	local pathname base
+
 	# loop over all sources directories
 	for dir in "${sources_dirs[@]}"; do
-		# get just the basenames of all directories and symlinks and remove the first line ($dir)
-		repos+=($(find "$dir" -maxdepth 1 \( -type d -o -type l \) -exec basename {} \; | sed '1d'))
+		while IFS= read -r pathname; do
+			# check if path is a directory or symlink to a directory
+			[[ -d "$pathname" ]] || continue
+			# get just the basename
+			base="${pathname:t}"
+			repos+=("$base")
+			# search for directories and symlinks
+		done < <(fd . "$dir" --max-depth 1 --type d --type l)
 	done
 
 	_describe 'repositories' repos || compadd "${repos[@]}"
