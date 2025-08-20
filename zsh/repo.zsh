@@ -40,7 +40,9 @@ repo() {
 
 	# if target is not empty
 	if [ -n "$target" ]; then
-		cd "$target" || return 1
+		# get absolute path to resolve symlinks
+		local absolute_target="${target:A}"
+		cd "$absolute_target" || return 1
 	else
 		echo "Repository not found: $1"
 		return 1
