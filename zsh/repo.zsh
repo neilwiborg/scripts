@@ -23,7 +23,7 @@ repo_find_match() {
 		done < <(fd "$search_term" "$dir" --max-depth 1 --type d --type l --ignore-case)
 	done
 
-	return 1
+	REPLY=""
 }
 
 repo() {
