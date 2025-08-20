@@ -3,6 +3,29 @@
 # define global array so completions will have access to the variable
 typeset -ga sources_dirs=("$HOME/cs")
 
+repo_find_match() {
+  local search_term="$1"
+  local pathname base
+
+  # loop over all sources directories
+  for dir in "${sources_dirs[@]}"; do
+    while IFS= read -r pathname; do
+	  # check if path is a directory or symlink to a directory
+      [[ -d "$pathname" ]] || continue
+	  # extract basename and convert to lowercase
+      base="${pathname:t:l}"
+      if [[ "$base" == "$search_term" ]]; then
+	    # return match
+		REPLY="$pathname"
+        return 0
+      fi
+	# search for directories and symlinks only one level deep in $dir, and search case-insensitively
+    done < <(fd "$search_term" "$dir" --max-depth 1 --type d --type l --ignore-case)
+  done
+
+  return 1
+}
+
 repo() {
 	# if no args or too many args passed
 	if [ $# -ne 1 ]; then
@@ -11,16 +34,9 @@ repo() {
 	fi
 
 	# convert query into lowercase
-	local search_term=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-	local target=""
-
-	# loop over all sources directories
-	for dir in "${sources_dirs[@]}"; do
-		# search for directories and symlinks only one level deep in $dir, and search case-insensitively
-		target=$(find "$dir" -maxdepth 1 \( -type d -o -type l \) -iname "*$search_term*" | head -n 1)
-		# if we find the target, then break
-		[[ -n "$target" ]] && break
-	done
+	local search_term="${1:l}"
+	repo_find_match "$search_term"
+	local target=$REPLY
 
 	# if target is not empty
 	if [ -n "$target" ]; then
