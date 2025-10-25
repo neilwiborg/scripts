@@ -1,14 +1,14 @@
 #!/usr/bin/env zsh
 
 # define global array so completions will have access to the variable
-typeset -ga sources_dirs=("$HOME/cs")
+typeset -g -a _REPO_SOURCES_DIRS=("$HOME/cs")
 
 _repo_find_match() {
 	local search_term="$1"
 	local pathname base
 
 	# loop over all sources directories
-	for dir in "${sources_dirs[@]}"; do
+	for dir in "${_REPO_SOURCES_DIRS[@]}"; do
 		while IFS= read -r pathname; do
 			# check if path is a directory or symlink to a directory
 			[[ -d "$pathname" ]] || continue
@@ -58,7 +58,7 @@ _repo_complete() {
 	local pathname base
 
 	# loop over all sources directories
-	for dir in "${sources_dirs[@]}"; do
+	for dir in "${_REPO_SOURCES_DIRS[@]}"; do
 		while IFS= read -r pathname; do
 			# check if path is a directory or symlink to a directory
 			[[ -d "$pathname" ]] || continue
