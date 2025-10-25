@@ -52,8 +52,11 @@ gallery() {
 		return 1
 	fi
 
-	# Check case-insensitively for file extensions, and don't return error if no results
-	setopt extended_glob
+	if ! [[ -o extended_glob ]]; then
+		echo "Please enable extended_glob and retry."
+		return 1
+	fi
+
 	local filetype_pattern images img key
 	filetype_pattern="(${(j:|:)_GALLERY_IMAGE_TYPES})"
 	images=(${~image_dir}/*.(#i)${~filetype_pattern}(.N))
