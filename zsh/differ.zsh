@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-menu() {
+_differ_menu() {
     printf '\nDiffer menu:\n'
     printf '  1) Edit file 1\n'
     printf '  2) Edit file 2\n'
@@ -18,7 +18,7 @@ differ() {
     file2=$(mktemp)
 
     while true; do
-        menu
+        _differ_menu
         read -r choice
         case $choice in
             1)
