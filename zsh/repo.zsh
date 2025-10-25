@@ -3,7 +3,7 @@
 # define global array so completions will have access to the variable
 typeset -ga sources_dirs=("$HOME/cs")
 
-repo_find_match() {
+_repo_find_match() {
 	local search_term="$1"
 	local pathname base
 
@@ -35,7 +35,7 @@ repo() {
 
 	# convert query into lowercase
 	local search_term="${1:l}"
-	repo_find_match "$search_term"
+	_repo_find_match "$search_term"
 	local target=$REPLY
 
 	# if target is not empty
