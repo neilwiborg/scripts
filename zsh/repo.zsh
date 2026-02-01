@@ -27,14 +27,25 @@ _repo_find_match() {
 }
 
 repo() {
-	# if no args or too many args passed
-	if [ $# -ne 1 ]; then
-		echo "Usage: repo <repository name>"
+	local open_flag=0
+	local repo_name
+
+	# parse arguments
+	if [[ "$1" == "-o" ]]; then
+		open_flag=1
+		repo_name="$2"
+	else
+		repo_name="$1"
+	fi
+
+	# if no repo name or too many args passed
+	if [[ -z "$repo_name" || $# -gt 2 ]]; then
+		echo "Usage: repo [-o] <repository name>"
 		return 1
 	fi
 
 	# convert query into lowercase
-	local search_term="${1:l}"
+	local search_term="${repo_name:l}"
 	_repo_find_match "$search_term"
 	local target=$REPLY
 
@@ -42,17 +53,26 @@ repo() {
 	if [ -n "$target" ]; then
 		# get absolute path to resolve symlinks
 		local absolute_target="${target:A}"
-		cd "$absolute_target" || return 1
+		if [[ $open_flag -eq 1 ]]; then
+			code "$absolute_target"
+		else
+			cd "$absolute_target" || return 1
+		fi
 	else
-		echo "Repository not found: $1"
+		echo "Repository not found: $repo_name"
 		return 1
 	fi
 }
 
 # tab completion for repo function
 _repo_complete() {
-	# check that completions are for the first argument
-	(( CURRENT == 2 )) || return 1
+	if [[ "$words[2]" == "-o" ]]; then
+		# check that completions are for the second argument
+		(( CURRENT == 3 )) || return 1
+	else
+		# check that completions are for the first argument
+		(( CURRENT == 2 )) || return 1
+	fi
 
 	local -a repos
 	local pathname base
