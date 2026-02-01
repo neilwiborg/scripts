@@ -3,6 +3,22 @@
 # define global array so completions will have access to the variable
 typeset -g -a _REPO_SOURCES_DIRS=("$HOME/cs")
 
+_repo_list_all_repos() {
+	local pathname base
+
+	# loop over all sources directories
+	for dir in "${_REPO_SOURCES_DIRS[@]}"; do
+		while IFS= read -r pathname; do
+			# check if path is a directory or symlink to a directory
+			[[ -d "$pathname" ]] || continue
+			# get just the basename
+			base="${pathname:t}"
+			echo "$base"
+			# search for directories and symlinks
+		done < <(fd . "$dir" --max-depth 1 --type d --type l)
+	done
+}
+
 _repo_find_match() {
 	local search_term="$1"
 	local pathname base
@@ -30,17 +46,26 @@ repo() {
 	local open_flag=0
 	local repo_name
 
-	# parse arguments
+	# parse arguments for -o flag
 	if [[ "$1" == "-o" ]]; then
 		open_flag=1
-		repo_name="$2"
-	else
-		repo_name="$1"
+		# remove flag from args
+		shift
 	fi
 
-	# if no repo name or too many args passed
-	if [[ -z "$repo_name" || $# -gt 2 ]]; then
-		echo "Usage: repo [-o] <repository name>"
+	# if no remaining args, use fzf to select repo
+	if [[ $# -eq 0 ]]; then
+		# get list of repo names and pipe to fzf
+		repo_name="$(_repo_list_all_repos | fzf --height=40% --layout=reverse)"
+		
+		# if no selection made, exit
+		if [[ -z "$repo_name" ]]; then
+			return 0
+		fi
+	elif [[ $# -eq 1 ]]; then
+		repo_name="$1"
+	else
+		echo "Usage: repo [-o] [repository name]"
 		return 1
 	fi
 
@@ -75,19 +100,9 @@ _repo_complete() {
 	fi
 
 	local -a repos
-	local pathname base
-
-	# loop over all sources directories
-	for dir in "${_REPO_SOURCES_DIRS[@]}"; do
-		while IFS= read -r pathname; do
-			# check if path is a directory or symlink to a directory
-			[[ -d "$pathname" ]] || continue
-			# get just the basename
-			base="${pathname:t}"
-			repos+=("$base")
-			# search for directories and symlinks
-		done < <(fd . "$dir" --max-depth 1 --type d --type l)
-	done
+	
+	# get list of repo names and convert to array, splitting on newlines
+	repos=("${(@f)$(_repo_list_all_repos)}")
 
 	_describe 'repositories' repos || compadd "${repos[@]}"
 }
