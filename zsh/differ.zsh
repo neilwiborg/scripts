@@ -12,6 +12,12 @@ _differ_menu() {
 }
 
 differ() {
+    # check if git is installed
+    if ! whence git > /dev/null; then
+        echo "Error: git is not installed"
+        return 1
+    fi
+
     local file1 file2 choice
 
     file1=$(mktemp)

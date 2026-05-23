@@ -43,6 +43,12 @@ _repo_find_match() {
 }
 
 repo() {
+	# check if fd is installed
+	if ! whence fd > /dev/null; then
+		echo "Error: fd is not installed"
+		return 1
+	fi
+
 	local open_flag=0
 	local repo_name
 

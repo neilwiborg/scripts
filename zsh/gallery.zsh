@@ -38,6 +38,8 @@ _gallery_delete_image_without_confirmation() {
 }
 
 gallery() {
+	setopt local_options extended_glob
+
 	local image_dir="$1"
 
 	# Check if the directory is provided and exists
@@ -52,8 +54,9 @@ gallery() {
 		return 1
 	fi
 
-	if ! [[ -o extended_glob ]]; then
-		echo "Please enable extended_glob and retry."
+	# Check if the IMAGE_VIEWER program is installed
+	if ! whence "$IMAGE_VIEWER" > /dev/null; then
+		echo "Error: IMAGE_VIEWER program '$IMAGE_VIEWER' is not installed"
 		return 1
 	fi
 
